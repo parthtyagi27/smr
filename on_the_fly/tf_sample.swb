@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#SBATCH --job-name="TF Keras API on MNIST data"
+#SBATCH --output="tf_keras.%j.%N.out"
+#SBATCH --error="tf_keras.%j.%N.err"
+#SBATCH --partition=gpux1
+
+module load wmlce
+
+echo "import tensorflow as tf" > mnist-demo.py
+echo "mnist = tf.keras.datasets.mnist" >> mnist-demo.py
+echo " " >> mnist-demo.py
+echo "(x_train, y_train),(x_test, y_test) = mnist.load_data()" >> mnist-demo.py
+echo "x_train, x_test = x_train / 255.0, x_test / 255.0" >> mnist-demo.py
+echo " " >> mnist-demo.py
+echo "model = tf.keras.models.Sequential([" >> mnist-demo.py
+echo "  tf.keras.layers.Flatten(input_shape=(28, 28))," >> mnist-demo.py
+echo "  tf.keras.layers.Dense(512, activation=tf.nn.relu)," >> mnist-demo.py
+echo "  tf.keras.layers.Dropout(0.2)," >> mnist-demo.py
+echo "  tf.keras.layers.Dense(10, activation=tf.nn.softmax)" >> mnist-demo.py
+echo "])" >> mnist-demo.py
+echo "model.compile(optimizer='adam'," >> mnist-demo.py
+echo "              loss='sparse_categorical_crossentropy'," >> mnist-demo.py
+echo "              metrics=['accuracy'])" >> mnist-demo.py
+
+echo "model.fit(x_train, y_train, epochs=5)" >> mnist-demo.py
+echo "model.evaluate(x_test, y_test)" >> mnist-demo.py
+
+python3 ./mnist-demo.py

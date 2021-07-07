@@ -1,0 +1,17 @@
+#!/bin/bash
+ 
+#SBATCH --job-name="hvd_tutorial"
+#SBATCH --output="hvd_tutorial.%j.%N.out"
+#SBATCH --error="hvd_tutorial.%j.%N.err"
+#SBATCH --partition=gpu
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=36
+#SBATCH --gres=gpu:v100:4
+#SBATCH --export=ALL
+#SBATCH -t 1:00:00
+ 
+NODE_LIST=$( scontrol show hostname $SLURM_JOB_NODELIST | sed -z 's/\n/\:4,/g' )
+NODE_LIST=${NODE_LIST%?}
+echo $NODE_LIST
+mpirun -np $SLURM_NTASKS -H $NODE_LIST -bind-to none -map-by slot -x NCCL_DEBUG=INFO -x NCCL_SOCKET_IFNAME=^lo -x LD_LIBRARY_PATH -x PATH -mca pml ob1 -mca btl ^openib -mca btl_openib_verbose 1 -mca btl_tcp_if_incle 192.168.0.0/16 -mca oob_tcp_if_include 192.168.0.0/16 python3 train_cooley.py
